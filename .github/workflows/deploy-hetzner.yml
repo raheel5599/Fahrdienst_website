@@ -30,11 +30,11 @@ jobs:
           scp -i ~/.ssh/deploy_key /tmp/site.tar.gz "fpadmin@${SSH_HOST}:/tmp/tariq-fahrdienst-site.tar.gz"
           ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" '
             set -e
-            mkdir -p /opt/tariq-fahrdienst
-            find /opt/tariq-fahrdienst -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-            tar -xzf /tmp/tariq-fahrdienst-site.tar.gz -C /opt/tariq-fahrdienst
+            mkdir -p /home/fpadmin/sites/tariq-fahrdienst
+            find /home/fpadmin/sites/tariq-fahrdienst -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            tar -xzf /tmp/tariq-fahrdienst-site.tar.gz -C /home/fpadmin/sites/tariq-fahrdienst
             docker network inspect fahrschulpilot_web >/dev/null 2>&1 || docker network create fahrschulpilot_web
-            cd /opt/tariq-fahrdienst
+            cd /home/fpadmin/sites/tariq-fahrdienst
             docker compose -f compose.production.yml up -d --build --remove-orphans
             docker ps --filter name=tariq-fahrdienst-site
           '
