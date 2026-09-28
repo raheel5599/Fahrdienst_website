@@ -1,0 +1,95 @@
+{
+  email info@tariqit-consulting.com
+  admin off
+}
+
+app.fahrschul-pilot.de, schueler.fahrschul-pilot.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+    -Server
+  }
+  reverse_proxy api:3001
+}
+
+fahrer.taxi5599.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+    -Server
+  }
+
+  @taxi_maintenance file {
+    root /srv/maintenance
+    try_files taxi-active
+  }
+  handle @taxi_maintenance {
+    header Cache-Control "no-store, no-cache, must-revalidate"
+    header Retry-After "30"
+    root * /srv/maintenance
+    rewrite * /taxi.html
+    file_server
+  }
+
+  handle {
+    reverse_proxy taxi-fahrer-app:3000
+  }
+}
+
+www.fahrschul-pilot.de, fahrschul-pilot.de {
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+    -Server
+  }
+  redir https://app.fahrschul-pilot.de{uri} permanent
+}
+
+
+tariq-fahrdienst.de, www.tariq-fahrdienst.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+  reverse_proxy tariq-fahrdienst-site:80
+}
+
+tariq-taxizentrale.de, www.tariq-taxizentrale.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+  reverse_proxy tariq-taxizentrale-site:80
+}
+
+tariq-fahrschule.de, www.tariq-fahrschule.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+  reverse_proxy tariq-fahrschule-site:80
+}
+
