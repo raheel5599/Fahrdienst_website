@@ -1,0 +1,45 @@
+name: Diagnose TARIQ Domains
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/diagnose-domains.yml
+  workflow_dispatch:
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH vorbereiten
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+      - name: Domains und Caddy prüfen
+        env:
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" '
+            set +e
+            echo "=== DNS ==="
+            getent ahostsv4 tariq-fahrdienst.de
+            getent ahostsv4 www.tariq-fahrdienst.de
+            getent ahostsv4 tariq-taxizentrale.de
+            getent ahostsv4 www.tariq-taxizentrale.de
+            getent ahostsv4 tariq-fahrschule.de
+            getent ahostsv4 www.tariq-fahrschule.de
+            echo "=== CONTAINERS ==="
+            docker ps --format "table {{.Names}}\t{{.Status}}"
+            echo "=== CADDY LOGS ==="
+            cd /opt/fahrschulpilot/deployment/hetzner
+            docker compose -f compose.production.yml logs --tail=120 caddy
+            echo "=== CURL HTTP/HTTPS ==="
+            for d in tariq-fahrdienst.de www.tariq-fahrdienst.de tariq-taxizentrale.de www.tariq-taxizentrale.de tariq-fahrschule.de www.tariq-fahrschule.de; do
+              echo "--- $d"
+              curl -I -L --max-time 8 "http://$d" 2>&1 | head -n 8
+              curl -I -L --max-time 8 "https://$d" 2>&1 | head -n 12
+            done
+          '
