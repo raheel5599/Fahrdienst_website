@@ -1,0 +1,54 @@
+name: Import approved Fahrdienst assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-fahrdienst-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Replace Fahrdienst assets with approved originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/fahrdienst
+          find assets/fahrdienst -mindepth 1 -maxdepth 1 -type f -delete
+
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/c69c4e1b-e05f-4a95-ba40-052ee07db4f8.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYmJlYjc3N2QxYzEzMWY4NyIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDc2MTM0MX0.37q_K_7I3CVbVS994qvVVCNUUxbenhC8Rnz4cL9MOKw' -o assets/fahrdienst/hero-vw-flotte-krankenhaus.png
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/97c349d0-abc6-4882-9477-4de11d40ed87.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiM2NlZjFlMGU5MTQ3M2U0NSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDgzMTc1OH0.w59m2oSv1r4b-0LTAC8mN9va5Eqrh0abPO_iqGZiPxs' -o assets/fahrdienst/service-dialyse-rollstuhl-caddy.png
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/620fe519-75ca-427d-abb1-1965397cc51e.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYjA0MzhiYTMwMzg0YmFlYSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDgxNjY3NX0.TV4mxlf-k_TwGBdTDpg8Yqr2QQC72Ml6abl3lPMWkII' -o assets/fahrdienst/ueber-uns-fahrer-patientin.png
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/b0c82fc7-e77e-4dd4-83e9-a27958059d4b.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiM2VjNTEyMzM2YTQ3ZWQ0OCIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDc4NTg0M30.OleoLulUC1jiFQuMNmCggdUOlY8_emfiUtoNqdqfbnk' -o assets/fahrdienst/service-arztfahrt-arteon.png
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/fae8deef-0357-40fd-876d-5f645cdd2f47.jpeg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNGQzY2I2NWYyMjEzMWYxYSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDgxMDA3OX0.lsPDiApOke6wkH3YDJRxkhp0ct0S1FGTOrIWkXsfIp0' -o assets/fahrdienst/badge-25-jahre-erfahrung.jpeg
+
+          test -s assets/fahrdienst/hero-vw-flotte-krankenhaus.png
+          test -s assets/fahrdienst/service-dialyse-rollstuhl-caddy.png
+          test -s assets/fahrdienst/ueber-uns-fahrer-patientin.png
+          test -s assets/fahrdienst/service-arztfahrt-arteon.png
+          test -s assets/fahrdienst/badge-25-jahre-erfahrung.jpeg
+
+          file assets/fahrdienst/*
+
+      - name: Commit imported assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A assets/fahrdienst
+          if git diff --cached --quiet; then
+            echo "No asset changes to commit."
+            exit 0
+          fi
+          git commit -m "Replace Fahrdienst assets with approved final images"
+          git push
