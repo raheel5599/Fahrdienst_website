@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0">
   <title>TARIQ Fahrdienst | Krankenfahrten in der Wetterau</title>
   <meta name="description" content="TARIQ Fahrdienst – Krankenfahrten, Dialysefahrten, Krankenhausfahrten, Reha- und Kurfahrten in Florstadt, Reichelsheim und der Wetterau.">
-  <link rel="stylesheet" href="/styles.css?v=20260929-1715">
+  <link rel="stylesheet" href="/styles.css?v=20260929-krankentransport-form-1">
 </head>
 <body>
   <header class="site-header">
@@ -44,19 +44,21 @@
           <strong>Krankenfahrt anfragen</strong>
         </div>
 
-        <label>
+        <label class="place-field">
           <span>Abholadresse</span>
-          <input type="text" placeholder="Adresse oder Ort eingeben" aria-label="Abholadresse">
+          <input id="pickup-address" type="text" placeholder="Adresse oder Ort eingeben" aria-label="Abholadresse" autocomplete="street-address">
+          <div class="place-suggestions" data-for="pickup-address" role="listbox" hidden></div>
         </label>
 
         <span class="swap" aria-hidden="true">⇄</span>
 
-        <label>
+        <label class="place-field">
           <span>Zieladresse</span>
-          <input type="text" placeholder="Praxis, Klinik, Dialyse ..." aria-label="Zieladresse">
+          <input id="destination-address" type="text" placeholder="Praxis, Klinik, Dialyse ..." aria-label="Zieladresse" autocomplete="off">
+          <div class="place-suggestions" data-for="destination-address" role="listbox" hidden></div>
         </label>
 
-        <a class="gold-button" href="tel:+4960316868187">Jetzt anfragen →</a>
+        <button class="gold-button booking-submit" id="open-request-form" type="button">Jetzt anfragen →</button>
       </div>
     </section>
 
@@ -170,6 +172,135 @@
     </section>
   </main>
 
+  <div class="request-modal" id="request-modal" hidden>
+    <div class="request-modal-backdrop" data-close-modal></div>
+    <section class="request-dialog" role="dialog" aria-modal="true" aria-labelledby="request-title">
+      <button class="request-close" type="button" aria-label="Formular schließen" data-close-modal>×</button>
+
+      <div class="request-heading">
+        <span>KRANKENFAHRT ANFRAGEN</span>
+        <h2 id="request-title">Ihre Fahrt bequem anfragen.</h2>
+        <p>Tragen Sie Ihre Daten ein. Wir prüfen die Anfrage und melden uns bei Ihnen zur Bestätigung.</p>
+      </div>
+
+      <form id="request-form" class="request-form" novalidate>
+        <div class="form-section">
+          <h3>Fahrtdaten</h3>
+          <div class="form-grid">
+            <label class="form-field form-field-wide place-field">
+              <span>Abholadresse *</span>
+              <input id="form-pickup" name="pickup" type="text" required autocomplete="street-address">
+              <div class="place-suggestions" data-for="form-pickup" role="listbox" hidden></div>
+            </label>
+
+            <label class="form-field form-field-wide place-field">
+              <span>Zieladresse / Einrichtung *</span>
+              <input id="form-destination" name="destination" type="text" required autocomplete="off">
+              <div class="place-suggestions" data-for="form-destination" role="listbox" hidden></div>
+            </label>
+
+            <label class="form-field">
+              <span>Datum *</span>
+              <input name="date" type="date" required>
+            </label>
+
+            <label class="form-field">
+              <span>Uhrzeit *</span>
+              <input name="time" type="time" required>
+            </label>
+
+            <label class="form-field">
+              <span>Art der Fahrt *</span>
+              <select name="rideType" required>
+                <option value="">Bitte auswählen</option>
+                <option>Arzttermin</option>
+                <option>Dialysefahrt</option>
+                <option>Krankenhausfahrt</option>
+                <option>Reha- / Kurfahrt</option>
+                <option>Rollstuhlfahrt</option>
+                <option>Sonstige Krankenfahrt</option>
+              </select>
+            </label>
+
+            <label class="form-field">
+              <span>Fahrt *</span>
+              <select name="tripMode" required>
+                <option value="">Bitte auswählen</option>
+                <option>Nur Hinfahrt</option>
+                <option>Hin- und Rückfahrt</option>
+                <option>Nur Rückfahrt</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Krankenkasse</h3>
+          <div class="form-grid">
+            <label class="form-field form-field-wide">
+              <span>Krankenkasse *</span>
+              <input name="insurance" type="text" list="health-insurers" placeholder="z. B. AOK Hessen" required autocomplete="organization">
+              <datalist id="health-insurers">
+                <option value="AOK Hessen">
+                <option value="Techniker Krankenkasse (TK)">
+                <option value="BARMER">
+                <option value="DAK-Gesundheit">
+                <option value="IKK classic">
+                <option value="KKH">
+                <option value="hkk">
+                <option value="HEK">
+              </datalist>
+            </label>
+            <label class="form-field form-field-wide">
+              <span>Versichertennummer <small>(optional)</small></span>
+              <input name="insuranceNumber" type="text" autocomplete="off">
+            </label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Kontaktdaten</h3>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Vorname *</span>
+              <input name="firstName" type="text" required autocomplete="given-name">
+            </label>
+            <label class="form-field">
+              <span>Nachname *</span>
+              <input name="lastName" type="text" required autocomplete="family-name">
+            </label>
+            <label class="form-field">
+              <span>Telefon *</span>
+              <input name="phone" type="tel" required autocomplete="tel">
+            </label>
+            <label class="form-field">
+              <span>E-Mail *</span>
+              <input name="email" type="email" required autocomplete="email">
+            </label>
+            <label class="form-field form-field-wide">
+              <span>Bemerkung <small>(optional)</small></span>
+              <textarea name="notes" rows="3" placeholder="z. B. Rollstuhl, Begleitperson oder besondere Abholhinweise"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <label class="privacy-check">
+          <input type="checkbox" name="consent" required>
+          <span>Ich stimme zu, dass meine Angaben zur Bearbeitung meiner Fahrtanfrage verwendet werden. *</span>
+        </label>
+
+        <input class="hp-field" name="companyWebsite" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="request-actions">
+          <button class="request-submit" type="submit">Krankenfahrt senden →</button>
+          <a href="tel:+4960316868187">Oder anrufen: 06031-6868187</a>
+        </div>
+
+        <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
+
   <footer>
     <div>
       <img src="/logo.svg?v=20260929-1638" alt="TARIQ Krankenfahrdienst">
@@ -177,5 +308,6 @@
     </div>
     <a href="tel:+4960316868187">06031-6868187</a>
   </footer>
+  <script src="/app.js?v=20260929-krankentransport-form-1" defer></script>
 </body>
 </html>

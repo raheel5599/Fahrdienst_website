@@ -1179,3 +1179,281 @@ footer img{
     margin:0 auto;
   }
 }
+
+
+/* Krankenfahrt-Anfrage: Places-Autocomplete + Formular */
+.booking-submit{
+  border:0;
+  cursor:pointer;
+}
+
+.place-field{
+  position:relative;
+}
+
+.place-suggestions{
+  position:absolute;
+  z-index:90;
+  left:0;
+  right:0;
+  top:calc(100% + 4px);
+  overflow:hidden;
+  border:1px solid #6d501f;
+  border-radius:7px;
+  background:#101010;
+  box-shadow:0 18px 40px rgba(0,0,0,.55);
+}
+
+.place-suggestions[hidden]{display:none}
+
+.place-option{
+  width:100%;
+  padding:11px 13px;
+  display:block;
+  border:0;
+  border-bottom:1px solid #302717;
+  background:#101010;
+  color:#f3efe6;
+  text-align:left;
+  cursor:pointer;
+  font-size:12px;
+  line-height:1.35;
+}
+
+.place-option:last-of-type{border-bottom:0}
+.place-option:hover,
+.place-option:focus{background:#1c170f;outline:0}
+.place-option strong{display:block;color:#fff;font-size:13px}
+.place-option small{display:block;margin-top:2px;color:#aaa298}
+
+.places-credit{
+  padding:7px 12px;
+  background:#080808;
+  color:#8e887f;
+  font-size:9px;
+  text-align:right;
+  letter-spacing:.2px;
+}
+
+.request-modal{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+}
+
+.request-modal[hidden]{display:none}
+
+.request-modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(5px);
+}
+
+.request-dialog{
+  position:relative;
+  z-index:1;
+  width:min(820px,100%);
+  max-height:calc(100vh - 48px);
+  overflow:auto;
+  border:1px solid #6e4d19;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 90% 0,rgba(230,169,58,.12),transparent 22rem),
+    linear-gradient(180deg,#10100f,#080808);
+  box-shadow:0 30px 80px rgba(0,0,0,.75);
+}
+
+.request-close{
+  position:sticky;
+  float:right;
+  top:12px;
+  z-index:5;
+  width:38px;
+  height:38px;
+  margin:12px 12px 0 0;
+  display:grid;
+  place-items:center;
+  border:1px solid #5d451f;
+  border-radius:50%;
+  background:#111;
+  color:#f0bd58;
+  cursor:pointer;
+  font-size:25px;
+}
+
+.request-heading{
+  padding:34px 38px 20px;
+  border-bottom:1px solid #352914;
+}
+
+.request-heading>span{
+  color:#e7aa40;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:3px;
+}
+
+.request-heading h2{
+  margin:6px 0 8px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:33px;
+}
+
+.request-heading p{
+  margin:0;
+  max-width:620px;
+  color:#bbb4aa;
+  font-size:13px;
+  line-height:1.5;
+}
+
+.request-form{
+  padding:26px 38px 34px;
+}
+
+.form-section{
+  margin-bottom:25px;
+}
+
+.form-section h3{
+  margin:0 0 13px;
+  padding-bottom:8px;
+  border-bottom:1px solid #332714;
+  color:#efb650;
+  font-size:14px;
+  letter-spacing:.4px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.form-field{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.form-field-wide{grid-column:1/-1}
+
+.form-field>span{
+  color:#d7d1c7;
+  font-size:11px;
+  font-weight:700;
+}
+
+.form-field>span small{
+  color:#807a72;
+  font-weight:400;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea{
+  width:100%;
+  border:1px solid #4c3a1d;
+  border-radius:6px;
+  outline:0;
+  background:#151515;
+  color:#f7f4ed;
+  font:inherit;
+  font-size:13px;
+}
+
+.form-field input,
+.form-field select{
+  height:44px;
+  padding:0 12px;
+}
+
+.form-field textarea{
+  padding:11px 12px;
+  resize:vertical;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus{
+  border-color:#dca43e;
+  box-shadow:0 0 0 3px rgba(220,164,62,.1);
+}
+
+.privacy-check{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin:4px 0 22px;
+  color:#aaa49b;
+  font-size:11px;
+  line-height:1.45;
+}
+
+.privacy-check input{
+  margin-top:2px;
+  accent-color:#d9a13b;
+}
+
+.hp-field{
+  position:absolute !important;
+  left:-9999px !important;
+  width:1px !important;
+  height:1px !important;
+  opacity:0 !important;
+}
+
+.request-actions{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.request-submit{
+  min-height:46px;
+  padding:0 24px;
+  border:0;
+  border-radius:7px;
+  background:linear-gradient(180deg,#ffda72,#e4a132);
+  color:#17110a;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.request-submit:disabled{
+  opacity:.6;
+  cursor:wait;
+}
+
+.request-actions a{
+  color:#d7ae62;
+  font-size:12px;
+}
+
+.form-status{
+  min-height:22px;
+  margin-top:14px;
+  font-size:12px;
+}
+
+.form-status.success{color:#8fd39b}
+.form-status.error{color:#ff9b91}
+
+body.modal-open{overflow:hidden}
+
+@media(max-width:700px){
+  .request-modal{padding:10px}
+  .request-dialog{max-height:calc(100vh - 20px)}
+  .request-heading{padding:26px 20px 17px}
+  .request-heading h2{font-size:27px}
+  .request-form{padding:21px 20px 26px}
+  .form-grid{grid-template-columns:1fr}
+  .form-field-wide{grid-column:auto}
+  .request-actions{align-items:stretch;flex-direction:column}
+  .request-actions a{text-align:center}
+}

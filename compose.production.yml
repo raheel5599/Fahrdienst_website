@@ -3,8 +3,29 @@ services:
     build: .
     container_name: tariq-fahrdienst-site
     restart: unless-stopped
+    depends_on:
+      - api
     networks:
       - web
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: tariq-fahrdienst-api
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      GOOGLE_PLACES_API_KEY: ${GOOGLE_PLACES_API_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.ionos.de}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:-info@taxi5599.de}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_TO: ${MAIL_TO:-info@taxi5599.de}
+    networks:
+      - web
+
 networks:
   web:
     external: true
