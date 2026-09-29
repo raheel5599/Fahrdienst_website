@@ -1735,3 +1735,25 @@ body.modal-open{overflow:hidden}
     padding: 20px 18px 28px;
   }
 }
+
+
+/* Footer: use the same approved logo asset as the header */
+footer .footer-logo{
+  display:block;
+  width:240px;
+  max-width:100%;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  object-position:left center;
+  background:transparent;
+  mix-blend-mode:normal;
+}
+
+@media(max-width:560px){
+  footer .footer-logo{
+    width:min(270px,82vw);
+    margin:0 auto;
+    object-position:center;
+  }
+}
