@@ -1,1 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 210"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#f9d67a"/><stop offset=".45" stop-color="#d69a2d"/><stop offset="1" stop-color="#ffe2a0"/></linearGradient></defs><path d="M8 16h190l-50 27H54z" fill="url(#g)"/><path d="M176 20C120 50 78 96 37 194h52c32-84 65-123 120-162z" fill="url(#g)"/><path d="M207 25c-47 36-75 86-99 169h28c23-75 48-121 96-160z" fill="#eee"/><path d="M170 55c-28 30-47 70-60 121" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round" stroke-dasharray="17 14"/><text x="235" y="112" font-family="Arial Black,Arial" font-size="104" font-weight="900" fill="#eee">T</text><g transform="translate(326 32)"><path d="M60 0L0 80h33l28-38 27 38h35L64 0z" fill="#eee"/><path d="M21 60L56 12l14 19-36 49H8z" fill="url(#g)"/></g><text x="447" y="112" font-family="Arial Black,Arial" font-size="104" font-weight="900" fill="#eee">RIQ</text><path d="M770 25c32-35 94-17 94 32 0 53-64 87-94 109-31-22-94-56-94-109 0-49 62-67 94-32z" fill="none" stroke="url(#g)" stroke-width="8"/><circle cx="743" cy="67" r="12" fill="#eee"/><circle cx="790" cy="78" r="11" fill="#eee"/><path d="M722 91q35 20 73 40q-47 28-86 5z" fill="url(#g)"/><path d="M830 40v38M811 59h38" stroke="#eee" stroke-width="9"/><line x1="245" y1="148" x2="292" y2="148" stroke="#d6a13a" stroke-width="4"/><text x="310" y="160" font-family="Arial" font-size="42" font-weight="700" letter-spacing="5" fill="#d6a13a">FAHRDIENST</text><line x1="626" y1="148" x2="670" y2="148" stroke="#d6a13a" stroke-width="4"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 210" role="img" aria-labelledby="title desc">
+<title id="title">TARIQ Krankenfahrdienst</title>
+<desc id="desc">Gold-weißes TARIQ Krankenfahrdienst Logo mit Straßen-T und Herzsymbol.</desc>
+<defs>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f9d67a"/>
+    <stop offset=".45" stop-color="#d69a2d"/>
+    <stop offset="1" stop-color="#ffe2a0"/>
+  </linearGradient>
+</defs>
+
+<!-- stylisiertes Straßen-T -->
+<path d="M8 16h190l-50 27H54z" fill="url(#gold)"/>
+<path d="M176 20C120 50 78 96 37 194h52c32-84 65-123 120-162z" fill="url(#gold)"/>
+<path d="M207 25c-47 36-75 86-99 169h28c23-75 48-121 96-160z" fill="#f2f2f2"/>
+<path d="M170 55c-28 30-47 70-60 121" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round" stroke-dasharray="17 14"/>
+
+<!-- TARIQ ohne Lücke zwischen T und A -->
+<text x="218" y="112" font-family="Arial Black,Arial,sans-serif" font-size="104" font-weight="900" fill="#f2f2f2">T</text>
+<g transform="translate(286 32)">
+  <path d="M55 0L0 80h31l25-37 27 37h34L60 0z" fill="#f2f2f2"/>
+  <path d="M18 60L53 12l14 19-35 49H6z" fill="url(#gold)"/>
+</g>
+<text x="391" y="112" font-family="Arial Black,Arial,sans-serif" font-size="104" font-weight="900" fill="#f2f2f2">RIQ</text>
+
+<!-- Herz / Patientensymbol -->
+<path d="M770 25c32-35 94-17 94 32 0 53-64 87-94 109-31-22-94-56-94-109 0-49 62-67 94-32z" fill="none" stroke="url(#gold)" stroke-width="8"/>
+<circle cx="743" cy="67" r="12" fill="#f2f2f2"/>
+<circle cx="790" cy="78" r="11" fill="#f2f2f2"/>
+<path d="M722 91q35 20 73 40q-47 28-86 5z" fill="url(#gold)"/>
+<path d="M830 40v38M811 59h38" stroke="#f2f2f2" stroke-width="9"/>
+
+<!-- Unterzeile -->
+<line x1="232" y1="149" x2="274" y2="149" stroke="#d6a13a" stroke-width="4"/>
+<text x="292" y="159" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700" letter-spacing="2.4" fill="#d6a13a">KRANKENFAHRDIENST</text>
+<line x1="666" y1="149" x2="707" y2="149" stroke="#d6a13a" stroke-width="4"/>
+</svg>
