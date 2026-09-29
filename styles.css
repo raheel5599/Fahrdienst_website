@@ -1030,3 +1030,40 @@ footer img{
   }
   .brand img{width:185px}
 }
+
+
+/* Header logo corrected to match the approved reference proportions. */
+.header-inner{
+  grid-template-columns:260px 1fr 250px;
+}
+.brand img{
+  width:250px;
+  height:78px;
+  object-fit:contain;
+  object-position:left center;
+  background:transparent;
+}
+.phone-box{
+  min-width:235px;
+}
+.phone-box strong{
+  font-size:18px;
+  letter-spacing:.2px;
+}
+
+@media(max-width:1050px){
+  .header-inner{
+    grid-template-columns:225px 1fr 220px;
+  }
+  .brand img{width:218px;height:70px}
+  .phone-box{min-width:210px}
+  .phone-box strong{font-size:16px}
+}
+
+@media(max-width:820px){
+  .brand img{width:210px;height:68px}
+}
+
+@media(max-width:560px){
+  .brand img{width:205px;height:68px}
+}
