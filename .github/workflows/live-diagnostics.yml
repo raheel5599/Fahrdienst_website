@@ -5,23 +5,41 @@ on:
     branches: [diagnostics-live-status-20260929]
 
 jobs:
-  check:
+  google-secret:
     runs-on: ubuntu-latest
     steps:
-      - name: Check required secrets are present
+      - name: GOOGLE_PLACES_API_KEY
         env:
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          FAHRDIENST_SMTP_PASSWORD: ${{ secrets.FAHRDIENST_SMTP_PASSWORD }}
-          HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
-          HETZNER_SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
-        run: |
-          missing=0
-          if [ -z "$GOOGLE_PLACES_API_KEY" ]; then echo "::error::GOOGLE_PLACES_API_KEY is missing"; missing=1; else echo "GOOGLE_PLACES_API_KEY present"; fi
-          if [ -z "$FAHRDIENST_SMTP_PASSWORD" ]; then echo "::error::FAHRDIENST_SMTP_PASSWORD is missing"; missing=1; else echo "FAHRDIENST_SMTP_PASSWORD present"; fi
-          if [ -z "$HETZNER_HOST" ]; then echo "::error::HETZNER_HOST is missing"; missing=1; else echo "HETZNER_HOST present"; fi
-          if [ -z "$HETZNER_SSH_PRIVATE_KEY" ]; then echo "::error::HETZNER_SSH_PRIVATE_KEY is missing"; missing=1; else echo "HETZNER_SSH_PRIVATE_KEY present"; fi
-          exit "$missing"
+          VALUE: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+        run: test -n "$VALUE"
 
+  smtp-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: FAHRDIENST_SMTP_PASSWORD
+        env:
+          VALUE: ${{ secrets.FAHRDIENST_SMTP_PASSWORD }}
+        run: test -n "$VALUE"
+
+  host-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: HETZNER_HOST
+        env:
+          VALUE: ${{ secrets.HETZNER_HOST }}
+        run: test -n "$VALUE"
+
+  ssh-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: HETZNER_SSH_PRIVATE_KEY
+        env:
+          VALUE: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
+        run: test -n "$VALUE"
+
+  live-health:
+    runs-on: ubuntu-latest
+    steps:
       - name: Check public website and API health
         run: |
           set -e
@@ -30,4 +48,3 @@ jobs:
           grep -q '"ok":true' /tmp/health.json
           grep -q '"placesConfigured":true' /tmp/health.json
           grep -q '"mailConfigured":true' /tmp/health.json
-          echo "Website and API health are OK."
