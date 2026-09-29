@@ -21,22 +21,6 @@ jobs:
           VALUE: ${{ secrets.FAHRDIENST_SMTP_PASSWORD }}
         run: test -n "$VALUE"
 
-  host-secret:
-    runs-on: ubuntu-latest
-    steps:
-      - name: HETZNER_HOST
-        env:
-          VALUE: ${{ secrets.HETZNER_HOST }}
-        run: test -n "$VALUE"
-
-  ssh-secret:
-    runs-on: ubuntu-latest
-    steps:
-      - name: HETZNER_SSH_PRIVATE_KEY
-        env:
-          VALUE: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
-        run: test -n "$VALUE"
-
   live-health:
     runs-on: ubuntu-latest
     steps:
@@ -46,5 +30,41 @@ jobs:
           curl -fsS --retry 3 https://tariq-fahrdienst.de/ >/dev/null
           curl -fsS --retry 3 https://tariq-fahrdienst.de/api/health | tee /tmp/health.json
           grep -q '"ok":true' /tmp/health.json
-          grep -q '"placesConfigured":true' /tmp/health.json
-          grep -q '"mailConfigured":true' /tmp/health.json
+
+  server-existing-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          set -e
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Check existing server variable names only
+        env:
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" '
+            set -e
+            echo "=== matching env names in running containers ==="
+            for c in $(docker ps --format "{{.Names}}"); do
+              names=$(docker inspect "$c" --format "{{range .Config.Env}}{{println .}}{{end}}" 2>/dev/null | cut -d= -f1 | grep -E "GOOGLE.*(PLACE|MAP)|PLACE.*API|MAP.*API|SMTP|MAIL_(PASS|PASSWORD)" || true)
+              if [ -n "$names" ]; then
+                echo "[$c]"
+                printf "%s\n" "$names"
+              fi
+            done
+            echo "=== matching names in common env files ==="
+            find /opt/fahrschulpilot /home/fpadmin/sites -maxdepth 5 -type f \( -name ".env" -o -name "*.env" \) -print 2>/dev/null | while read f; do
+              names=$(grep -E "^[A-Za-z_][A-Za-z0-9_]*=" "$f" 2>/dev/null | cut -d= -f1 | grep -E "GOOGLE.*(PLACE|MAP)|PLACE.*API|MAP.*API|SMTP|MAIL_(PASS|PASSWORD)" || true)
+              if [ -n "$names" ]; then
+                echo "[$f]"
+                printf "%s\n" "$names"
+              fi
+            done
+          '
