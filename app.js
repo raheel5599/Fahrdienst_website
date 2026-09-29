@@ -52,8 +52,12 @@
     const response = await fetch('/api/places/autocomplete?q=' + encodeURIComponent(query), {
       headers: { Accept: 'application/json' }
     });
-    if (!response.ok) return [];
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data.message || 'Adresssuche momentan nicht verfügbar.');
+      error.status = response.status;
+      throw error;
+    }
     return Array.isArray(data.suggestions) ? data.suggestions : [];
   }
 
@@ -106,8 +110,14 @@
       try {
         const suggestions = await fetchPlaces(query);
         renderSuggestions(input, box, suggestions);
-      } catch {
-        box.hidden = true;
+      } catch (error) {
+        box.innerHTML = '';
+        const notice = document.createElement('div');
+        notice.className = 'place-option';
+        notice.style.cursor = 'default';
+        notice.innerHTML = '<strong>Adresssuche derzeit nicht verfügbar</strong><small>Bitte Adresse manuell eingeben.</small>';
+        box.appendChild(notice);
+        box.hidden = false;
       }
     });
 
