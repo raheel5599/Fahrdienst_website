@@ -15,12 +15,12 @@ jobs:
           HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
           HETZNER_SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
         run: |
-          set -e
-          test -n "$GOOGLE_PLACES_API_KEY"
-          test -n "$FAHRDIENST_SMTP_PASSWORD"
-          test -n "$HETZNER_HOST"
-          test -n "$HETZNER_SSH_PRIVATE_KEY"
-          echo "Required secrets are present."
+          missing=0
+          if [ -z "$GOOGLE_PLACES_API_KEY" ]; then echo "::error::GOOGLE_PLACES_API_KEY is missing"; missing=1; else echo "GOOGLE_PLACES_API_KEY present"; fi
+          if [ -z "$FAHRDIENST_SMTP_PASSWORD" ]; then echo "::error::FAHRDIENST_SMTP_PASSWORD is missing"; missing=1; else echo "FAHRDIENST_SMTP_PASSWORD present"; fi
+          if [ -z "$HETZNER_HOST" ]; then echo "::error::HETZNER_HOST is missing"; missing=1; else echo "HETZNER_HOST present"; fi
+          if [ -z "$HETZNER_SSH_PRIVATE_KEY" ]; then echo "::error::HETZNER_SSH_PRIVATE_KEY is missing"; missing=1; else echo "HETZNER_SSH_PRIVATE_KEY present"; fi
+          exit "$missing"
 
       - name: Check public website and API health
         run: |
