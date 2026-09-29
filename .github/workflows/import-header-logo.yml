@@ -1,0 +1,41 @@
+name: Import final transparent header logo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-header-logo.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import-logo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download approved header logo
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/fahrdienst
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/18127acd-d6a2-4624-9cac-c67f0d7b5231.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNmMzNjAxMTM5Njk0MGZhYiIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDg1NDU0N30.4R9D8JkfkU_QXfqpo2YNMf3jqyGEYdjzv44Gtra5QUg' -o assets/fahrdienst/logo-tariq-krankenfahrdienst-header.png
+          test -s assets/fahrdienst/logo-tariq-krankenfahrdienst-header.png
+          file assets/fahrdienst/logo-tariq-krankenfahrdienst-header.png
+
+      - name: Commit logo
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/fahrdienst/logo-tariq-krankenfahrdienst-header.png
+          if git diff --cached --quiet; then
+            echo "No logo changes."
+            exit 0
+          fi
+          git commit -m "Add approved transparent Fahrdienst header logo"
+          git push
