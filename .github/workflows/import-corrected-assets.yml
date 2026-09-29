@@ -48,3 +48,5 @@ jobs:
           fi
           git commit -m "Replace Fahrdienst images with corrected vehicle branding"
           git push
+
+# trigger corrected asset import
