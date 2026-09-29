@@ -1,0 +1,44 @@
+name: Import final Fahrdienst hero assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-final-hero-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download approved final logo and hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/fahrdienst
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/892388c7-d7bc-49dc-beb4-d8ed82e5bec9.jpeg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiN2I4YTg3ZTA2OWU4OWYyMyIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDgzOTUyMH0.g3APA_pzDLe6fy409gKLa5HiWXSPpjT7FGs28Q3SLOU' -o assets/fahrdienst/logo-tariq-krankenfahrdienst-final.jpeg
+          curl -fL --retry 3 --retry-delay 2 'https://d2jqrm6oza8nb6.cloudfront.net/datasets/a235fe19-c3cd-43d3-a2c3-0962ab7eed53.jpeg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZmQxYjFlODgwOTczMTA4OCIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MDgzODUzNn0.tSfFXVk772_05arAf4yiQQ37C7yhRmA_dcuFUAPY1bw' -o assets/fahrdienst/hero-vw-flotte-krankenhaus-final.jpeg
+          test -s assets/fahrdienst/logo-tariq-krankenfahrdienst-final.jpeg
+          test -s assets/fahrdienst/hero-vw-flotte-krankenhaus-final.jpeg
+          file assets/fahrdienst/logo-tariq-krankenfahrdienst-final.jpeg
+          file assets/fahrdienst/hero-vw-flotte-krankenhaus-final.jpeg
+
+      - name: Commit final assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/fahrdienst
+          if git diff --cached --quiet; then
+            echo "No asset changes."
+            exit 0
+          fi
+          git commit -m "Add final approved Fahrdienst logo and hero"
+          git push
