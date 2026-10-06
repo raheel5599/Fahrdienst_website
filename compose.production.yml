@@ -16,6 +16,14 @@ services:
     networks:
       - web
 
+  taxiapp:
+    build:
+      context: https://github.com/raheel5599/taxiapp.git#main
+    container_name: tariq-taxi-app
+    restart: unless-stopped
+    networks:
+      - web
+
   api:
     build:
       context: .
