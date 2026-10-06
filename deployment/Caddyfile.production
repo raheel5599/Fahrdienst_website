@@ -59,29 +59,15 @@ www.fahrschul-pilot.de, fahrschul-pilot.de {
 
 
 app.tariq-zentrale.de {
-  encode zstd gzip
-  header {
-    Strict-Transport-Security "max-age=31536000; includeSubDomains"
-    X-Content-Type-Options "nosniff"
-    X-Frame-Options "DENY"
-    Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
-    -Server
-  }
-  reverse_proxy tariq-taxi-app:80
+  header Cache-Control "no-store, no-cache, must-revalidate"
+  header Retry-After "3600"
+  respond "TARIQ Zentrale – Wartungsarbeiten. Wir machen morgen weiter." 503
 }
 
 app.tariq-fahrdienst.de {
-  encode zstd gzip
-  header {
-    Strict-Transport-Security "max-age=31536000; includeSubDomains"
-    X-Content-Type-Options "nosniff"
-    X-Frame-Options "DENY"
-    Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
-    -Server
-  }
-  reverse_proxy tariq-fahrdienst-app:80
+  header Cache-Control "no-store, no-cache, must-revalidate"
+  header Retry-After "3600"
+  respond "TARIQ Fahrdienst – Wartungsarbeiten. Wir machen morgen weiter." 503
 }
 
 tariq-fahrdienst.de, www.tariq-fahrdienst.de {
