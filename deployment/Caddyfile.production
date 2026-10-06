@@ -57,6 +57,20 @@ www.fahrschul-pilot.de, fahrschul-pilot.de {
 }
 
 
+
+app.tariq-fahrdienst.de {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+    -Server
+  }
+  reverse_proxy tariq-fahrdienst-app:80
+}
+
 tariq-fahrdienst.de, www.tariq-fahrdienst.de {
   encode zstd gzip
   header {
