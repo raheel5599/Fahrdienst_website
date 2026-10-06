@@ -8,6 +8,14 @@ services:
     networks:
       - web
 
+  app:
+    build:
+      context: https://github.com/raheel5599/fahrdienstapp.git#main
+    container_name: tariq-fahrdienst-app
+    restart: unless-stopped
+    networks:
+      - web
+
   api:
     build:
       context: .
