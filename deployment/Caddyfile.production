@@ -58,7 +58,7 @@ www.fahrschul-pilot.de, fahrschul-pilot.de {
 
 
 
-app.taxi-fahrdienst.de {
+app.tariq-zentrale.de {
   encode zstd gzip
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
