@@ -1,0 +1,50 @@
+name: Fahrdienst-App auf Hetzner veröffentlichen
+# Uses the existing server credential here without copying credentials to another repository.
+# Shared proxy configuration is never written by this workflow.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/deploy-fahrdienst-app.yml']
+  workflow_dispatch:
+    inputs:
+      app_ref:
+        description: Fahrdienst-App commit or branch
+        required: true
+        default: '0a4f72ff560cbd64fce7c14104a9a4a10328345e'
+permissions:
+  contents: read
+concurrency:
+  group: tariq-fahrdienst-app-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: raheel5599/fahrdienstapp
+          ref: ${{ inputs.app_ref || '0a4f72ff560cbd64fce7c14104a9a4a10328345e' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: App testen und bauen
+        run: npm ci && npm test && npm run build
+      - name: SSH vorbereiten
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_HOST"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+      - name: App veröffentlichen und HTTPS prüfen
+        env:
+          SSH_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          tar --exclude=.git --exclude=node_modules --exclude=dist -czf /tmp/tariq-fahrdienst-app.tar.gz .
+          scp -i ~/.ssh/deploy_key /tmp/tariq-fahrdienst-app.tar.gz "fpadmin@${SSH_HOST}:/tmp/tariq-fahrdienst-app.tar.gz"
+          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'bash -s' < scripts/deploy-hetzner.sh
