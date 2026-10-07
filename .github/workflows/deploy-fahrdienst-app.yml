@@ -10,7 +10,7 @@ on:
       app_ref:
         description: Fahrdienst-App commit or branch
         required: true
-        default: '0a4f72ff560cbd64fce7c14104a9a4a10328345e'
+        default: 'main'
 permissions:
   contents: read
 concurrency:
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: raheel5599/fahrdienstapp
-          ref: ${{ inputs.app_ref || '0a4f72ff560cbd64fce7c14104a9a4a10328345e' }}
+          ref: ${{ inputs.app_ref || '7e0e3f4f5729bfacf6fa2ed716f951cefebf525e' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -45,7 +45,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.HETZNER_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile; docker inspect tariq-fahrdienst-app --format "{{json .Config.Labels}}"'
+          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile; docker inspect tariq-fahrdienst-app --format "Compose project={{index .Config.Labels \"com.docker.compose.project\"}} service={{index .Config.Labels \"com.docker.compose.service\"}}"'
           JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+\\.js)"/)[1])')
           curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js
           if cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js; then
