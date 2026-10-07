@@ -3,6 +3,7 @@ name: Hetzner deploy
 on:
   push:
     branches: [main]
+    paths-ignore: ['.github/workflows/deploy-fahrdienst-app.yml']
   workflow_dispatch:
 concurrency:
   group: tariq-fahrdienst-site-production
