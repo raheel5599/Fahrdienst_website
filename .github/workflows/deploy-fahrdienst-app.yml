@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: raheel5599/fahrdienstapp
-          ref: ${{ inputs.app_ref || '7e0e3f4f5729bfacf6fa2ed716f951cefebf525e' }}
+          ref: ${{ inputs.app_ref || '37b2105a61f15fb11579330444fd0f1226b0e1c2' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,8 +47,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile'
           JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+[.]js)"/)[1])')
-          curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js
-          if cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js; then
+          if curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js && cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js; then
             echo "Der getestete App-Stand ist bereits produktiv; HTTPS und Routing-Schutz sind geprüft."
             exit 0
           fi
