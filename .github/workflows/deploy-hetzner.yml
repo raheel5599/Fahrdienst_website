@@ -54,11 +54,4 @@ jobs:
             docker compose -f compose.production.yml up -d --build --remove-orphans
             docker ps --filter name=tariq-fahrdienst-site
           '
-          scp -i ~/.ssh/deploy_key deployment/Caddyfile.production "fpadmin@${SSH_HOST}:/tmp/Caddyfile.tariq-websites"
-          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" '
-            set -e
-            cp /tmp/Caddyfile.tariq-websites /opt/fahrschulpilot/deployment/hetzner/Caddyfile
-            cd /opt/fahrschulpilot/deployment/hetzner
-            docker compose -f compose.production.yml run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile
-            docker compose -f compose.production.yml up -d --no-deps --force-recreate caddy
-          '
+          # Shared Caddy routing is owned by fahrschulpilot; site deploys must not overwrite it.
