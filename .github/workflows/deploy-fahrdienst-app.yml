@@ -45,8 +45,8 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.HETZNER_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile; docker inspect tariq-fahrdienst-app --format "Compose project={{index .Config.Labels \"com.docker.compose.project\"}} service={{index .Config.Labels \"com.docker.compose.service\"}}"'
-          JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+\\.js)"/)[1])')
+          ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile'
+          JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+[.]js)"/)[1])')
           curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js
           if cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js; then
             echo "Der getestete App-Stand ist bereits produktiv; HTTPS und Routing-Schutz sind geprüft."
