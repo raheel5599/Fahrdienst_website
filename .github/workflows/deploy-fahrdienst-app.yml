@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: raheel5599/fahrdienstapp
-          ref: ${{ inputs.app_ref || '9077697514b2deb4cbb57f4c4882c951371c9327' }}
+          ref: ${{ inputs.app_ref || '6ef41def37c8aee1620a1eaa0f615fad531ff6e0' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
