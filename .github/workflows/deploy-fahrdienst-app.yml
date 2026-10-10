@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: raheel5599/fahrdienstapp
-          ref: ${{ inputs.app_ref || '1a82b39c3c6aa990db2433049a7d715c36c556ed' }}
+          ref: ${{ inputs.app_ref || 'ad31fd3472c96ec3447249a9c9ff3a847dfb6189' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,7 +47,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'python3 /opt/fahrschulpilot/deployment/hetzner/scripts/check-routes.py /opt/fahrschulpilot/deployment/hetzner/Caddyfile'
           JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+[.]js)"/)[1])')
-          if curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js && cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js; then
+          if curl --fail --silent --show-error "https://app.tariq-fahrdienst.de${JS_ASSET}" -o /tmp/live-fahrdienst.js && cmp -s "dist${JS_ASSET}" /tmp/live-fahrdienst.js && curl --fail --silent --show-error "https://app.tariq-fahrdienst.de/" -o /tmp/live-fahrdienst.html && cmp -s dist/index.html /tmp/live-fahrdienst.html && curl --fail --silent --show-error "https://app.tariq-fahrdienst.de/manifest.webmanifest" -o /tmp/live-fahrdienst-manifest.json && cmp -s dist/manifest.webmanifest /tmp/live-fahrdienst-manifest.json && curl --fail --silent --show-error "https://app.tariq-fahrdienst.de/sw.js" -o /tmp/live-fahrdienst-sw.js && cmp -s dist/sw.js /tmp/live-fahrdienst-sw.js; then
             echo "Der getestete App-Stand ist bereits produktiv; HTTPS und Routing-Schutz sind geprüft."
             exit 0
           fi
