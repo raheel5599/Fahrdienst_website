@@ -2,7 +2,12 @@ import { createProjectSettings } from './project-settings.mjs';
 import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
-import nodemailer from 'nodemailer';
+import legacyMailer from 'nodemailer';
+import { createProjectMail } from './project-mail.mjs';
+const projectMail = createProjectMail();
+const nodemailer = {createTransport(options) {
+ return {sendMail: message => projectMail.configured() ? projectMail.send(message) : legacyMailer.createTransport(options).sendMail(message)};
+}};
 
 const projectSettings = createProjectSettings();
 const app = express();
@@ -33,7 +38,7 @@ const escapeHtml = (value) => clean(value, 2000)
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#039;');
 
-app.get('/health',async(_req,res)=>{let placesConfigured=false;try{placesConfigured=Boolean(await projectSettings.getKey());}catch{}res.json({ok:true,placesConfigured,centralConfigured:projectSettings.configured(),mailConfigured:Boolean(process.env.SMTP_PASS)});});
+app.get('/health',async(_req,res)=>{let placesConfigured=false;try{placesConfigured=Boolean(await projectSettings.getKey());}catch{}res.json({ok:true,placesConfigured,centralConfigured:projectSettings.configured(),mailConfigured:await (projectMail.configured()?projectMail.status().then(d=>d.configured).catch(()=>false):Promise.resolve(Boolean(process.env.SMTP_PASS)))});});
 
 app.get('/places/autocomplete', placesLimiter, async (req, res) => {
   const input = clean(req.query.q, 120);
@@ -118,7 +123,7 @@ app.post('/ride-request', formLimiter, async (req, res) => {
     return res.status(400).json({ message: 'Bitte füllen Sie alle Pflichtfelder korrekt aus.' });
   }
 
-  const smtpPass = process.env.SMTP_PASS;
+  const smtpPass=process.env.SMTP_PASS||(projectMail.configured()?'central-service':'');
   if (!smtpPass) {
     return res.status(503).json({ message: 'Der E-Mail-Versand ist noch nicht konfiguriert. Bitte rufen Sie uns unter 06031-6868187 an.' });
   }

@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '22'
       - name: Zentrale Anbindung testen
-        run: node --test project-settings.test.mjs && node --check server.js && python3 -m py_compile deployment/merge-env.py
+        run: node --test project-settings.test.mjs project-mail.test.mjs && node --check server.js && python3 -m py_compile deployment/merge-env.py
       - name: SSH vorbereiten
         env:
           SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
