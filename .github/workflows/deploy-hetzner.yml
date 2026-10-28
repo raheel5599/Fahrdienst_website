@@ -61,3 +61,6 @@ jobs:
             docker ps --filter name=tariq-fahrdienst-site
           '
           # Shared Caddy routing is owned by fahrschulpilot; site deploys must not overwrite it.
+
+      - name: Adresssuche Ende-zu-Ende prüfen
+        run: node deployment/check-places.mjs https://tariq-fahrdienst.de

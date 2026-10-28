@@ -57,7 +57,7 @@ app.get('/places/autocomplete', placesLimiter, async (req, res) => {
         locationBias: {
           circle: {
             center: { latitude: 50.32, longitude: 8.75 },
-            radius: 80000
+            radius:50000
           }
         }
       })
