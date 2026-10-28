@@ -32,6 +32,8 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3000
+      VERWALTUNG_API_URL: ${VERWALTUNG_API_URL:-}
+      VERWALTUNG_PROJECT_TOKEN: ${VERWALTUNG_PROJECT_TOKEN:-}
       GOOGLE_PLACES_API_KEY: ${GOOGLE_PLACES_API_KEY:-}
       SMTP_HOST: ${SMTP_HOST:-smtp.ionos.de}
       SMTP_PORT: ${SMTP_PORT:-465}

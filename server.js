@@ -1,8 +1,10 @@
+import { createProjectSettings } from './project-settings.mjs';
 import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import nodemailer from 'nodemailer';
 
+const projectSettings = createProjectSettings();
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -41,7 +43,7 @@ app.get('/health', (_req, res) => {
 
 app.get('/places/autocomplete', placesLimiter, async (req, res) => {
   const input = clean(req.query.q, 120);
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  let apiKey;try{apiKey=await projectSettings.getKey();}catch{return res.status(503).json({suggestions:[],message:'Zentrale Adresssuche momentan nicht verfügbar.'});}
 
   if (input.length < 3) return res.json({ suggestions: [] });
   if (!apiKey) return res.status(503).json({ suggestions: [], message: 'Google Places ist noch nicht konfiguriert.' });

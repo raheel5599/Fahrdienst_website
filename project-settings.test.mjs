@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createProjectSettings} from './project-settings.mjs';
+const env={VERWALTUNG_API_URL:'https://verwaltung.tariq-itconsulting.de/api/project-config',VERWALTUNG_PROJECT_TOKEN:'tv_'+'a'.repeat(43),GOOGLE_PLACES_API_KEY:'old'};
+test('central grant takes precedence, refreshes and clears after revocation',async()=>{let clock=0,calls=0;const c=createProjectSettings({env,now:()=>clock,fetchImpl:async()=>{calls++;return {ok:true,json:async()=>({values:calls===1?{GOOGLE_MAPS_SERVER_KEY:'central'}:{}})}}});assert.equal(await c.getKey(),'central');assert.equal(await c.getKey(),'central');assert.equal(calls,1);clock=61000;assert.equal(await c.getKey(),'');});
+test('central failure never falls back to a local key',async()=>{const c=createProjectSettings({env,fetchImpl:async()=>({ok:false})});await assert.rejects(c.getKey());});
+test('unconnected projects retain existing local configuration',async()=>{assert.equal(await createProjectSettings({env:{GOOGLE_PLACES_API_KEY:'legacy'}}).getKey(),'legacy');});
+test('rejects unexpected endpoints before sending credentials',async()=>{let sent=false;const c=createProjectSettings({env:{...env,VERWALTUNG_API_URL:'https://example.com'},fetchImpl:async()=>{sent=true}});await assert.rejects(c.getKey());assert.equal(sent,false);});
