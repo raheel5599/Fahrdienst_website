@@ -33,13 +33,7 @@ const escapeHtml = (value) => clean(value, 2000)
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#039;');
 
-app.get('/health', (_req, res) => {
-  res.json({
-    ok: true,
-    placesConfigured: Boolean(process.env.GOOGLE_PLACES_API_KEY),
-    mailConfigured: Boolean(process.env.SMTP_PASS)
-  });
-});
+app.get('/health',async(_req,res)=>{let placesConfigured=false;try{placesConfigured=Boolean(await projectSettings.getKey());}catch{}res.json({ok:true,placesConfigured,centralConfigured:projectSettings.configured(),mailConfigured:Boolean(process.env.SMTP_PASS)});});
 
 app.get('/places/autocomplete', placesLimiter, async (req, res) => {
   const input = clean(req.query.q, 120);
