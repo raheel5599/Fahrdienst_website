@@ -30,6 +30,7 @@ const formLimiter = rateLimit({
 });
 
 const clean = (value, max = 300) => String(value ?? '').trim().slice(0, max);
+const placesSession = value => /^[a-zA-Z0-9_-]{1,36}$/.test(String(value ?? '')) ? String(value) : undefined;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const escapeHtml = (value) => clean(value, 2000)
   .replaceAll('&', '&amp;')
@@ -42,6 +43,7 @@ app.get('/health',async(_req,res)=>{let placesConfigured=false;try{placesConfigu
 
 app.get('/places/autocomplete', placesLimiter, async (req, res) => {
   const input = clean(req.query.q, 120);
+  const sessionToken = placesSession(req.query.session);
   let apiKey;try{apiKey=await projectSettings.getKey();}catch{return res.status(503).json({suggestions:[],message:'Zentrale Adresssuche momentan nicht verfügbar.'});}
 
   if (input.length < 3) return res.json({ suggestions: [] });
@@ -57,6 +59,7 @@ app.get('/places/autocomplete', placesLimiter, async (req, res) => {
       },
       body: JSON.stringify({
         input,
+        sessionToken,
         includedRegionCodes: ['de'],
         languageCode: 'de',
         locationBias: {
@@ -90,6 +93,37 @@ app.get('/places/autocomplete', placesLimiter, async (req, res) => {
   } catch (error) {
     console.error('Places request failed', error);
     res.status(502).json({ suggestions: [], message: 'Adresssuche momentan nicht verfügbar.' });
+  }
+});
+
+app.get('/places/details', placesLimiter, async (req, res) => {
+  const placeId = String(req.query.id ?? '');
+  if (!/^[A-Za-z0-9_-]{1,300}$/.test(placeId)) return res.status(400).json({message:'Ungültiger Ort.'});
+  res.set('Cache-Control', 'no-store');
+  try {
+    const key = await projectSettings.getKey();
+    if (!key) return res.status(503).json({message:'Adresssuche derzeit nicht verfügbar.'});
+    const params = new URLSearchParams({languageCode:'de', regionCode:'DE'});
+    const sessionToken = placesSession(req.query.session);
+    if (sessionToken) params.set('sessionToken',sessionToken);
+    const response = await fetch('https://places.googleapis.com/v1/places/' + encodeURIComponent(placeId) + '?' + params, {
+      headers:{'X-Goog-Api-Key':key,'X-Goog-FieldMask':'formattedAddress,addressComponents'},
+      signal:AbortSignal.timeout(5000)
+    });
+    if (!response.ok) return res.status(502).json({message:'Adresse konnte nicht übernommen werden.'});
+    const place = await response.json();
+    const component = (...types) => {
+      const parts = place.addressComponents || [];
+      return types.map(type => parts.find(item => item.types.includes(type))?.longText).find(Boolean) || '';
+    };
+    res.json({
+      address:place.formattedAddress || '',
+      street:[component('route'),component('street_number')].filter(Boolean).join(' '),
+      postalCode:component('postal_code'),
+      city:component('locality','postal_town','administrative_area_level_3','sublocality_level_1')
+    });
+  } catch {
+    res.status(502).json({message:'Adresse konnte nicht übernommen werden.'});
   }
 });
 
