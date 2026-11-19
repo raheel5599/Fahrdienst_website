@@ -1,0 +1,41 @@
+name: Gemeinsamen Webcontainer mit Fahrdienst-App testen
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/test-tariq-websites.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tariq-websites-test
+  cancel-in-progress: false
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ secrets.HETZNER_HOST }}
+    steps:
+      - name: Fahrdienst-App parallel im Webnetz testen
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          ssh -o BatchMode=yes -i ~/.ssh/deploy_key "fpadmin@${SSH_HOST}" 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          image=$(docker inspect --type container --format '{{.Image}}' tariq-fahrdienst-app)
+          if ! docker container inspect tariq-websites >/dev/null 2>&1; then
+            docker run -d --name tariq-websites --label purpose=fahrdienst-web-pilot \
+              --restart unless-stopped --network fahrschulpilot_web "$image"
+          fi
+          test "$(docker inspect --format '{{index .Config.Labels "purpose"}}' tariq-websites)" = fahrdienst-web-pilot
+          docker exec tariq-websites nginx -t
+          for route in / /manifest.webmanifest /sw.js /web-pilot-test-route; do
+            expected=$(docker exec fahrschulpilot-caddy-1 wget -qO- "http://tariq-fahrdienst-app$route" | sha256sum)
+            actual=$(docker exec fahrschulpilot-caddy-1 wget -qO- "http://tariq-websites$route" | sha256sum)
+            test "$expected" = "$actual"
+            echo "HTTP und Inhalt geprüft: $route"
+          done
+          REMOTE
