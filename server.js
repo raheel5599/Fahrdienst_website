@@ -29,6 +29,13 @@ const formLimiter = rateLimit({
   legacyHeaders: false
 });
 
+const taxiFormLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false
+});
+
 const clean = (value, max = 300) => String(value ?? '').trim().slice(0, max);
 const placesSession = value => /^[a-zA-Z0-9_-]{1,36}$/.test(String(value ?? '')) ? String(value) : undefined;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -220,6 +227,121 @@ app.post('/ride-request', formLimiter, async (req, res) => {
   } catch (error) {
     console.error('Mail send failed', error);
     res.status(502).json({ message: 'Die Anfrage konnte nicht per E-Mail gesendet werden. Bitte rufen Sie uns unter 06031-6868187 an.' });
+  }
+});
+
+app.post('/taxi-request', taxiFormLimiter, async(req,res)=>{
+  const b=req.body||{};
+  if(clean(b.companyWebsite,200)) return res.json({ok:true});
+
+  const data={
+    pickup:clean(b.pickup,300),destination:clean(b.destination,300),date:clean(b.date,30),time:clean(b.time,20),
+    rideType:clean(b.rideType,80),passengers:clean(b.passengers,40),tripMode:clean(b.tripMode,80),
+    luggage:clean(b.luggage,100),firstName:clean(b.firstName,100),lastName:clean(b.lastName,100),
+    phone:clean(b.phone,80),email:clean(b.email,160),notes:clean(b.notes,1200),
+    consent:b.consent===true||b.consent==='true'||b.consent==='on'
+  };
+  const required=['pickup','destination','date','time','rideType','passengers','tripMode','firstName','lastName','phone'];
+  if(required.some(k=>!data[k])||!data.consent) return res.status(400).json({message:'Bitte füllen Sie alle Pflichtfelder aus.'});
+
+  const smtpPass=process.env.SMTP_PASS||(projectMail.configured()?'central-service':'');
+  if(!smtpPass) return res.status(503).json({message:'Der E-Mail-Versand ist noch nicht konfiguriert. Bitte rufen Sie uns unter 06035 - 5599 an.'});
+
+  const smtpUser=process.env.SMTP_USER||'info@taxi5599.de';
+  const mailTo=process.env.MAIL_TO||'info@taxi5599.de';
+  const transporter=nodemailer.createTransport({
+    host:process.env.SMTP_HOST||'smtp.ionos.de',
+    port:Number(process.env.SMTP_PORT||465),
+    secure:String(process.env.SMTP_SECURE||'true')!=='false',
+    auth:{user:smtpUser,pass:smtpPass}
+  });
+
+  const fullName=data.firstName+' '+data.lastName;
+  const rows=[
+    ['Name',fullName],['Telefon',data.phone],['E-Mail',data.email||'–'],['Fahrtart',data.rideType],
+    ['Personen',data.passengers],['Fahrt',data.tripMode],['Gepäck',data.luggage||'–'],
+    ['Datum',data.date],['Uhrzeit',data.time],['Abholadresse',data.pickup],['Zieladresse',data.destination],
+    ['Bemerkung',data.notes||'–']
+  ];
+  const htmlRows=rows.map(([label,value])=>'<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:700">'+escapeHtml(label)+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee">'+escapeHtml(value)+'</td></tr>').join('');
+  const text=rows.map(([label,value])=>label+': '+value).join('\n');
+
+  try{
+    await transporter.sendMail({
+      from:'"TARIQ Taxi Zentrale Website" <'+smtpUser+'>',
+      to:mailTo,
+      replyTo:data.email||undefined,
+      subject:'Neue Fahrtanfrage – '+fullName+' – '+data.date,
+      text,
+      html:'<div style="font-family:Arial,sans-serif;color:#111"><h2 style="color:#b47a14">Neue Fahrtanfrage</h2><table style="border-collapse:collapse;width:100%;max-width:720px">'+htmlRows+'</table><p style="margin-top:18px;color:#666;font-size:12px">Gesendet über tariq-taxizentrale.de</p></div>'
+    });
+    res.json({ok:true});
+  }catch{
+    res.status(502).json({message:'Die Anfrage konnte nicht per E-Mail gesendet werden. Bitte rufen Sie uns unter 06035 - 5599 an.'});
+  }
+});
+
+app.post('/taxi-order', taxiFormLimiter, async(req,res)=>{
+  const b=req.body||{};
+  if(clean(b.companyWebsite,200)) return res.json({ok:true});
+
+  const data={
+    pickup:clean(b.pickup,300),
+    destination:clean(b.destination,300),
+    date:clean(b.date,30),
+    time:clean(b.time,20),
+    passengers:clean(b.passengers,40),
+    vehicle:clean(b.vehicle,80),
+    firstName:clean(b.firstName,100),
+    lastName:clean(b.lastName,100),
+    phone:clean(b.phone,80),
+    email:clean(b.email,160),
+    notes:clean(b.notes,1200),
+    consent:b.consent===true||b.consent==='true'||b.consent==='on'
+  };
+
+  const required=['pickup','destination','date','time','passengers','firstName','lastName','phone'];
+  if(required.some(k=>!data[k])||!data.consent){
+    return res.status(400).json({message:'Bitte füllen Sie alle Pflichtfelder aus.'});
+  }
+
+  const smtpPass=process.env.SMTP_PASS||(projectMail.configured()?'central-service':'');
+  if(!smtpPass){
+    return res.status(503).json({message:'Der E-Mail-Versand ist noch nicht konfiguriert. Bitte rufen Sie uns unter 06035 - 5599 an.'});
+  }
+
+  const smtpUser=process.env.SMTP_USER||'info@taxi5599.de';
+  const mailTo=process.env.MAIL_TO||'info@taxi5599.de';
+  const transporter=nodemailer.createTransport({
+    host:process.env.SMTP_HOST||'smtp.ionos.de',
+    port:Number(process.env.SMTP_PORT||465),
+    secure:String(process.env.SMTP_SECURE||'true')!=='false',
+    auth:{user:smtpUser,pass:smtpPass}
+  });
+
+  const fullName=data.firstName+' '+data.lastName;
+  const rows=[
+    ['Name',fullName],['Telefon',data.phone],['E-Mail',data.email||'–'],
+    ['Personen',data.passengers],['Fahrzeugwunsch',data.vehicle||'–'],
+    ['Datum',data.date],['Abholzeit',data.time],
+    ['Abholadresse',data.pickup],['Zieladresse',data.destination],
+    ['Bemerkung',data.notes||'–']
+  ];
+  const htmlRows=rows.map(([label,value])=>'<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:700">'+escapeHtml(label)+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee">'+escapeHtml(value)+'</td></tr>').join('');
+  const text=rows.map(([label,value])=>label+': '+value).join('\n');
+
+  try{
+    await transporter.sendMail({
+      from:'"TARIQ Taxi Zentrale Website" <'+smtpUser+'>',
+      to:mailTo,
+      replyTo:data.email||undefined,
+      subject:'Neue Taxibestellung – '+fullName+' – '+data.date+' '+data.time,
+      text,
+      html:'<div style="font-family:Arial,sans-serif;color:#111"><h2 style="color:#b47a14">Neue Taxibestellung</h2><table style="border-collapse:collapse;width:100%;max-width:720px">'+htmlRows+'</table><p style="margin-top:18px;color:#666;font-size:12px">Gesendet über tariq-taxizentrale.de</p></div>'
+    });
+    res.json({ok:true});
+  }catch{
+    res.status(502).json({message:'Die Taxibestellung konnte nicht per E-Mail gesendet werden. Bitte rufen Sie uns unter 06035 - 5599 an.'});
   }
 });
 
