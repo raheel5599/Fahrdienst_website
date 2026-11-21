@@ -57,8 +57,8 @@ jobs:
             chmod 600 /home/fpadmin/sites/tariq-fahrdienst/.env
             docker network inspect fahrschulpilot_web >/dev/null 2>&1 || docker network create fahrschulpilot_web
             cd /home/fpadmin/sites/tariq-fahrdienst
-            docker compose -f compose.production.yml up -d --build website api
-            docker ps --filter name=tariq-fahrdienst-site
+            docker compose -f compose.production.yml up -d --build api
+            bash deployment/publish-shared-website.sh
           '
           # Shared Caddy routing is owned by fahrschulpilot; site deploys must not overwrite it.
 
