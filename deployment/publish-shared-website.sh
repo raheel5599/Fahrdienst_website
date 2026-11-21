@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-container=tariq-websites
+container=tariq-frontend
+if ! docker container inspect "$container" >/dev/null 2>&1; then
+  container=tariq-websites
+fi
 proxy=fahrschulpilot-caddy-1
 volume=tariq-websites-public
 root=/srv/public-sites

@@ -3,6 +3,10 @@ set -euo pipefail
 
 compose=(docker compose -f compose.backend.yml)
 container=tariq-fahrdienst-api
+frontend=tariq-frontend
+if ! docker container inspect "$frontend" >/dev/null 2>&1; then
+  frontend=tariq-websites
+fi
 previous="$container-before-backend-$(date -u +%Y%m%d%H%M%S%N)"
 
 "${compose[@]}" config --quiet
@@ -23,7 +27,7 @@ ready() {
         .then(async response => { if (!response.ok || !(await response.json()).ok) process.exitCode = 1; })
         .catch(() => { process.exitCode = 1; });
     ' &&
-       docker exec tariq-websites wget -qO /dev/null http://tariq-fahrdienst-api:3000/health; then
+       docker exec "$frontend" wget -qO /dev/null http://tariq-fahrdienst-api:3000/health; then
       return 0
     fi
     sleep 2
