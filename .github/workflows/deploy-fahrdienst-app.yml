@@ -46,15 +46,25 @@ jobs:
         run: |
           set -euo pipefail
           check_vpn() {
-            local response
+            local response status attempt
             response=$(mktemp)
-            if [[ "$(curl --silent --show-error --max-time 15 --output "$response" --write-out '%{http_code}' https://app.tariq-fahrdienst.de/)" != 403 ]] ||
-               ! grep -Fq 'Nur über TARIQ VPN erreichbar' "$response"; then
-              rm -f "$response"
-              echo 'Die erwartete VPN-Sperre konnte nicht bestätigt werden.' >&2
-              return 1
-            fi
+            for attempt in 1 2 3; do
+              if status=$(curl --silent --show-error --max-time 15 --output "$response" --write-out '%{http_code}' https://app.tariq-fahrdienst.de/); then
+                if [[ "$status" == 403 ]] && grep -Fq 'Nur über TARIQ VPN erreichbar' "$response"; then
+                  rm -f "$response"
+                  return 0
+                fi
+                echo "VPN-Prüfung, Versuch $attempt: HTTP $status, erwartete Sperrseite nicht bestätigt." >&2
+                case "$status" in
+                  2??|3??|403) break ;;
+                esac
+              else
+                echo "VPN-Prüfung, Versuch $attempt: Verbindungsfehler (HTTP ${status:-000})." >&2
+              fi
+              if [[ "$attempt" != 3 ]]; then sleep 3; fi
+            done
             rm -f "$response"
+            return 1
           }
           check_vpn
           JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+[.]js)"/)[1])')
