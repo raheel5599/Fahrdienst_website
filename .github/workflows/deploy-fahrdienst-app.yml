@@ -22,12 +22,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: raheel5599/fahrdienstapp
-          ref: ${{ inputs.app_ref || '35a3529c5434346054ffde32fa99fe53c613c41c' }}
+          ref: ${{ inputs.app_ref || 'b5480c351b60a7fbe4114e424355ee9d76c0a8ee' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - name: App testen und bauen
+        env:
+          VITE_ITSG_TRANSPORT: '1'
         run: npm ci && npm test && npm run build
       - name: SSH vorbereiten
         env:
@@ -47,9 +49,11 @@ jobs:
           set -euo pipefail
           check_vpn() {
             local response status attempt
+            local url=${1:-https://app.tariq-fahrdienst.de/}
+            local method=${2:-GET}
             response=$(mktemp)
             for attempt in 1 2 3; do
-              if status=$(curl --silent --show-error --max-time 15 --output "$response" --write-out '%{http_code}' https://app.tariq-fahrdienst.de/); then
+              if status=$(curl --silent --show-error --max-time 15 --output "$response" --write-out '%{http_code}' --request "$method" "$url"); then
                 if [[ "$status" == 403 ]] && grep -Fq 'Nur über TARIQ VPN erreichbar' "$response"; then
                   rm -f "$response"
                   return 0
@@ -67,6 +71,7 @@ jobs:
             return 1
           }
           check_vpn
+          check_vpn https://app.tariq-fahrdienst.de/api/itsg/test/00000000-0000-4000-8000-000000000001 POST
           JS_ASSET=$(node -e 'const fs=require("fs");console.log(fs.readFileSync("dist/index.html","utf8").match(/src="([^"]+[.]js)"/)[1])')
           [[ "$JS_ASSET" =~ ^/assets/index-[A-Za-z0-9_-]+[.]js$ ]]
           JS_HASH=$(sha256sum "dist$JS_ASSET" | cut -d ' ' -f 1)
@@ -76,4 +81,5 @@ jobs:
           scp -i ~/.ssh/deploy_key /tmp/tariq-fahrdienst-app-dist.tar.gz "fpadmin@$SSH_HOST:/tmp/tariq-fahrdienst-app-dist.tar.gz"
           ssh -i ~/.ssh/deploy_key "fpadmin@$SSH_HOST" "bash -s -- '$JS_ASSET' '$JS_HASH'" < scripts/deploy-hetzner.sh
           check_vpn
+          check_vpn https://app.tariq-fahrdienst.de/api/itsg/test/00000000-0000-4000-8000-000000000001 POST
           echo 'VPN-Sperre von außen bestätigt.'
